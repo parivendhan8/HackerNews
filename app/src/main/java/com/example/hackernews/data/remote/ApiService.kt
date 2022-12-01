@@ -10,7 +10,7 @@ interface ApiService {
 
 
     @GET("v0/newstories.json?print=pretty")
-    suspend fun getNewStories() : Response<List<Long>>
+    suspend fun getNewStories() : Response<HashSet<Long>>
 
     @GET("v0/item/{id}.json?print=pretty")
     suspend fun getStory(@Path("id") id: Long) : Response<StoriesResponse>

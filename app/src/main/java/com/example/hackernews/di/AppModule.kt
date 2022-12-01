@@ -35,4 +35,8 @@ object AppModule {
             .fallbackToDestructiveMigration().build()
     }
 
+    @Singleton
+    @Provides
+    fun provideStoriesDao(appDataBase: AppDataBase) = appDataBase.storiesDao()
+
 }

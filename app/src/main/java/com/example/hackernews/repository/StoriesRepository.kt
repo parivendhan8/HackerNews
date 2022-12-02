@@ -1,10 +1,11 @@
 package com.example.hackernews.repository
 
-import com.example.hackernews.data.local.AppDataBase
+import androidx.paging.*
 import com.example.hackernews.data.local.StoriesDao
 import com.example.hackernews.data.local.StoriesEntity
 import com.example.hackernews.data.remote.ApiService
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
@@ -24,12 +25,13 @@ class StoriesRepository @Inject constructor(
 
 
     fun addStories(storiesEntity: StoriesEntity)
-    = storiesDao.addStroire(storiesEntity)
-
-    fun getStories() = storiesDao.getStories()
+    = storiesDao.addStories(storiesEntity)
 
     fun getStoriesId() = storiesDao.getStoriesId().toHashSet()
 
+    fun getStories() = storiesDao.getStories()
+
+    fun doSearch(value: String) = storiesDao.search(value)
 
 
 }

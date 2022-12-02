@@ -1,62 +1,86 @@
 package com.example.hackernews.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.Toast
 import androidx.activity.viewModels
-import androidx.lifecycle.lifecycleScope
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doAfterTextChanged
 import com.example.hackernews.databinding.ActivityMainBinding
+import com.example.hackernews.ui.adapter.StoriesAdapter
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.random.Random
 
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var binding : ActivityMainBinding
-    private val viewModel : MainViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
+    private val viewModel: MainViewModel by viewModels()
+    private val storiesAdapter by lazy { StoriesAdapter() }
 
-    companion object{
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        supportActionBar?.hide()
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
 
-        binding.tvText.setOnClickListener {
+        initView()
+        observer()
 
-            viewModel.apply {
+
+    }
+
+
+    private fun initView() {
+
+        binding.apply {
+            swipe.setOnRefreshListener {
                 viewModel.getNewStories()
+                swipe.isRefreshing = false
+            }
+        }
+
+
+        viewModel.apply {
+
+            getNewStories()
+
+            binding.recyclerView.adapter = storiesAdapter
+
+            binding.apply {
+                etSearch.doAfterTextChanged {
+                    if (etSearch.text?.length!! > 0)
+                        doSearch(etSearch.text.toString())
+                    else
+                        addStoriesObserver()
+                }
             }
 
 
         }
 
-        binding.tvText2.setOnClickListener {
+    }
 
-            viewModel.apply {
-                cancel()
+    private fun observer() {
+        viewModel.apply {
+
+            addStoriesObserver()
+
+            searchValue.observe(this@MainActivity) {
+                storiesLiveData.removeObservers(this@MainActivity);
+                storiesAdapter.submitList(it)
             }
 
-
-        }
-
-
-        viewModel.stories.observe(this){
-            binding.tvText.text = it?.size?.toString() ?: "TEST"
-        }
-
-       /* lifecycleScope.launchWhenStarted {
-            viewModel.allStories.collect{
-                binding.tvText.text = it.size.toString()
+            isResponse.observe(this@MainActivity){
+                binding.swipe.isRefreshing = false
             }
-        }*/
 
-        
-        
+        }
+    }
 
-
+    private fun addStoriesObserver() {
+        viewModel.storiesLiveData.observe(this) {
+            storiesAdapter.submitList(it)
+        }
     }
 }
